@@ -91,13 +91,7 @@ namespace LieroLevelLib
 			var bytes = GetBytes();
 			stream.Write(bytes, 0, bytes.Length);
 		}
-
-		public async Task SaveToStreamAsync(Stream stream)
-		{
-			var bytes = GetBytes();
-			await stream.WriteAsync(bytes, 0, bytes.Length);
-		}
-
+              
 		private static readonly IReadOnlyList<Material> materials = new int[]{
 			2, // 0
 			1 | 4 | 8, // 1

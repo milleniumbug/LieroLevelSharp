@@ -16,7 +16,7 @@ namespace LieroLevelLib
 	// - ??? (worm can't walk nor dig through it, but weapon projectiles pass through)
 	// - ??? (worm can walk through it, and dig through it, but weapon projectiles are stopped)
 	// a common extension is a "powerlevel", where behind the level data you place a signature "POWERLEVEL" (without quotes)
-	// followed 
+	// followed by palette data
 	public class LieroLevel : ICloneable
 	{
 		private const int width = 504;
@@ -28,10 +28,26 @@ namespace LieroLevelLib
 
 		public bool IsPowerlevel { get; }
 
+		private void ValidateBounds(int i, int j)
+		{
+			if(i >= 0 && i < width && j >= 0 && j < height)
+				return;
+			throw new IndexOutOfRangeException();
+		}
+
 		public Material this[int i, int j]
 		{
-			get => Palette.MaterialFromIndex(levelData[i + j * width]);
-			set => levelData[i + j * width] = value.Index;
+			get
+			{
+				ValidateBounds(i, j);
+				return Palette.MaterialFromIndex(levelData[i + j * width]);
+			}
+
+			set
+			{
+				ValidateBounds(i, j);
+				levelData[i + j * width] = value.Index;
+			}
 		}
 
 		public Material this[Point point]
@@ -85,11 +101,10 @@ namespace LieroLevelLib
 		public void SaveToStream(Stream stream)
 		{
 			stream.Write(levelData, 0, levelData.Length);
-		}
-
-		public async Task SaveToStreamAsync(Stream stream)
-		{
-			await stream.WriteAsync(levelData, 0, levelData.Length);
+			if(IsPowerlevel)
+			{
+				Palette.SaveToStream(stream);
+			}
 		}
 
 		object ICloneable.Clone()

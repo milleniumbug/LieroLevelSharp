@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using LieroLevelLib;
 using NUnit.Framework;
 
@@ -27,7 +28,7 @@ namespace Tests
 			brushCenter = new Brush(content, new Point(10, 10));
 			brushLeftTop = new Brush(content, new Point(0, 0));
 		}
-
+        
 		[Ignore("nope")]
 		[Test]
 		public void Sandbox()
@@ -35,6 +36,7 @@ namespace Tests
 			var width = 20;
 			var z = width * 250;
 			var data = new byte[504 * 350];
+			var stones = Palette.Default.Select(kvp => kvp.Key).Where(material => !material.WeaponTransparent && !material.WormTransparent && !material.Destructible).ToList();
 			for(int i = 0; i < 504; ++i)
 			{
 				for(int j = 0; j < 345; ++j)
@@ -55,7 +57,7 @@ namespace Tests
 
 				for(int j = 0; j < 50; ++j)
 				{
-					data[i + j * 504] = (byte)(z / width);
+					data[i + j * 504] = stones[(z / width) % stones.Count].Index;
 				}
 				z++;
 			}
@@ -71,6 +73,23 @@ namespace Tests
 		private Brush brushLeftTop;
 
 		[Test]
+		public void Powerlevel()
+		{
+			LieroLevel level;
+			using(var stream = File.OpenRead("TestData/cyber.lev"))
+			{
+				level = LieroLevel.LoadFromStream(stream);
+			}
+			Assert.IsTrue(level.IsPowerlevel);
+			using(var stream = File.OpenRead("TestData/fallout2.lev"))
+            {
+                level = LieroLevel.LoadFromStream(stream);
+            }
+			Assert.IsFalse(level.IsPowerlevel);
+		}
+
+		[Ignore("nope")]
+		[Test]
 		public void BasicDraw()
 		{
 			brushLeftTop.DrawTo(level, new Point(0, 0));
@@ -81,6 +100,7 @@ namespace Tests
 			}
 		}
 
+		[Ignore("nope")]
 		[Test]
 		public void ClippingDraw()
 		{
